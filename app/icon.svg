@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Word Cloud">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0c0a1a"/>
+      <stop offset="100%" stop-color="#1e1b4b"/>
+    </linearGradient>
+    <linearGradient id="bubble" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#5eead4"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+    <linearGradient id="bubble2" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f9a8d4"/>
+      <stop offset="100%" stop-color="#db2777"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="7" fill="url(#bg)"/>
+  <path
+    d="M6 20 Q6 11 14 10 Q18 6 24 11 Q26 17 20 19 L17 23 L14 19 Q8 19 6 20 Z"
+    fill="url(#bubble)"
+  />
+  <path
+    d="M14 22 Q14 17 18 16 Q22 14 25 17 Q26 20 22 21 L20 24 L18 21 Q15 21 14 22 Z"
+    fill="url(#bubble2)"
+  />
+  <text
+    x="16"
+    y="15"
+    text-anchor="middle"
+    font-family="system-ui,Segoe UI,sans-serif"
+    font-size="9"
+    font-weight="800"
+    fill="#ffffff"
+  >W</text>
+</svg>
