@@ -2,7 +2,11 @@
 
 A **Microsoft Teams–style live polling app** built with Next.js. Run Word Cloud and Multiple Choice polls in meetings, classrooms, or workshops — with **real-time updates** across every device.
 
-![Word Cloud Polls dashboard — dark theme with live word cloud](./docs/images/app-screenshot.png)
+![Word Cloud Polls — live speech-bubble word cloud and poll sidebar](./docs/images/app-screenshot.png)
+
+<p align="center">
+  <img src="./docs/images/portfolio-showcase.png" alt="Word Cloud Polls app showcase" width="720" />
+</p>
 
 ![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=flat-square&logo=typescript)
@@ -118,9 +122,13 @@ word-cloud/
 │   └── supabase/             # Supabase clients
 ├── docs/
 │   ├── images/
-│   │   └── app-screenshot.png  # README screenshot
+│   │   ├── app-screenshot.png      # Full-page README screenshot
+│   │   ├── portfolio-showcase.png  # 1440×900 — portfolio / project card
+│   │   └── portfolio-square.png    # Square crop — profile / thumbnail icon
 │   ├── DATABASE.md           # SQL scripts (not in git under /supabase)
 │   └── DEPLOYMENT.md         # Vercel deploy guide
+├── scripts/
+│   └── capture-screenshots.mjs # Regenerate images (requires dev server)
 └── .env.example              # Template only — safe to commit
 ```
 
@@ -159,6 +167,23 @@ flowchart LR
 | `npm run build` | Production build |
 | `npm run start` | Run production server locally |
 | `npm run lint` | ESLint |
+| `npm run screenshots` | Capture README + portfolio images (`npm run dev` first) |
+
+### Screenshots & portfolio assets
+
+| File | Use |
+|------|-----|
+| [docs/images/app-screenshot.png](./docs/images/app-screenshot.png) | Full-page shot for README |
+| [docs/images/portfolio-showcase.png](./docs/images/portfolio-showcase.png) | Wide hero / project gallery (1440×900) |
+| [docs/images/portfolio-square.png](./docs/images/portfolio-square.png) | Square crop for profile or card thumbnails |
+
+Regenerate after UI changes:
+
+```bash
+npm run dev
+# in another terminal:
+npm run screenshots
+```
 
 ---
 

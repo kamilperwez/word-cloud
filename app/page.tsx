@@ -55,7 +55,7 @@ export default function Home() {
   useEffect(() => {
     if (!questions.length) return;
     if (!activeQuestionId || !questions.some((q) => q.id === activeQuestionId)) {
-      setActiveQuestionId(questions[0].id);
+      setActiveQuestionId(questions[0]?.id ?? "");
     }
   }, [activeQuestionId, questions]);
 

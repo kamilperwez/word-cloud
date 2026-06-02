@@ -37,7 +37,7 @@ export function usePollData(): PollDataState {
 
     const [{ data: polls, error: pollsError }, { data: responses, error: responsesError }] =
       await Promise.all([
-        supabase.from("polls").select("*").order("created_at", { ascending: true }),
+        supabase.from("polls").select("*").order("created_at", { ascending: false }),
         supabase.from("poll_responses").select("*"),
       ]);
 
