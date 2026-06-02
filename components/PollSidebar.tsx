@@ -70,7 +70,7 @@ export function PollSidebar({
 
   return (
     <aside
-      className={`flex w-full flex-col rounded-2xl p-4 backdrop-blur lg:max-h-[calc(100vh-5rem)] ${
+      className={`mb-1 flex w-full flex-col rounded-2xl p-4 pb-5 backdrop-blur lg:max-h-[min(520px,calc(100vh-15rem))] ${
         isDark
           ? "border border-white/10 bg-slate-900/70"
           : "border border-slate-300 bg-white shadow-sm"
@@ -164,7 +164,7 @@ export function PollSidebar({
         )}
       </div>
 
-      <div className="min-h-0 max-h-[min(50vh,420px)] space-y-2 overflow-y-auto pr-1 lg:max-h-none lg:flex-1">
+      <div className="min-h-0 max-h-[min(42vh,360px)] space-y-2 overflow-y-auto pr-1 lg:max-h-[min(280px,calc(100vh-22rem))]">
         {questions.map((item) => {
           const isActive = item.id === activeQuestionId;
           return (

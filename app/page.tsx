@@ -195,7 +195,7 @@ export default function Home() {
 
   return (
     <main
-      className={`min-h-screen px-4 py-6 md:px-6 ${
+      className={`min-h-screen px-4 py-6 pb-10 md:px-6 md:pb-12 ${
         isDarkTheme
           ? "bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-slate-100"
           : "bg-slate-100 text-slate-900"
@@ -216,7 +216,7 @@ export default function Home() {
       )}
 
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 lg:grid-cols-[minmax(260px,300px)_minmax(0,1fr)]">
-        <div className="space-y-3">
+        <div className="space-y-3 lg:sticky lg:top-6 lg:max-h-[calc(100vh-2.5rem)] lg:overflow-y-auto lg:overscroll-contain lg:pb-4 lg:pr-1">
           <div
             className={`rounded-2xl p-4 ${
               isDarkTheme
