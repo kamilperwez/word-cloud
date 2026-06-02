@@ -10,7 +10,7 @@ import {
 } from "@/app/actions/polls";
 import { submitChoiceVote, submitWordVote } from "@/lib/submit-vote";
 import { PollSidebar } from "@/components/PollSidebar";
-import { WordCloud } from "@/components/WordCloud";
+import { WordCloudPanel } from "@/components/WordCloudPanel";
 import { usePollData } from "@/hooks/usePollData";
 import { getOrCreateSessionId } from "@/lib/session";
 import type { PollType } from "@/lib/types/polls";
@@ -215,7 +215,7 @@ export default function Home() {
         </div>
       )}
 
-      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 md:grid-cols-[290px_minmax(0,1fr)]">
+      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 lg:grid-cols-[minmax(260px,300px)_minmax(0,1fr)]">
         <div className="space-y-3">
           <div
             className={`rounded-2xl p-4 ${
@@ -398,34 +398,12 @@ export default function Home() {
                 </button>
               </form>
 
-              <WordCloud words={activeQuestion.words} isDark={isDarkTheme} />
-
-              {activeQuestion.words.length > 0 && (
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {activeQuestion.words.map((word) => (
-                    <span
-                      key={word.text}
-                      className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs ${
-                        isDarkTheme
-                          ? "border-white/15 bg-slate-950/60 text-slate-200"
-                          : "border-slate-300 bg-slate-50 text-slate-700"
-                      }`}
-                    >
-                      {word.text} ({word.count})
-                      {isAdmin && (
-                        <button
-                          type="button"
-                          onClick={() => void handleDeleteWord(word.text)}
-                          className="rounded p-0.5 text-slate-500 transition hover:bg-red-100 hover:text-red-700"
-                          aria-label={`Delete ${word.text}`}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
-                      )}
-                    </span>
-                  ))}
-                </div>
-              )}
+              <WordCloudPanel
+                words={activeQuestion.words}
+                isDark={isDarkTheme}
+                isAdmin={isAdmin}
+                onDeleteWord={(word) => void handleDeleteWord(word)}
+              />
             </>
           )}
 
@@ -499,7 +477,7 @@ export default function Home() {
       </div>
 
       {isFullscreen && activeQuestion && (
-        <div className="fixed inset-0 z-50 bg-slate-900 p-4 text-white md:p-8">
+        <div className="fixed inset-0 z-50 flex flex-col bg-slate-900 p-4 text-white md:p-8">
           <button
             type="button"
             onClick={() => setIsFullscreen(false)}
@@ -509,14 +487,14 @@ export default function Home() {
             Exit Fullscreen
           </button>
 
-          <div className="mx-auto flex h-full max-w-7xl flex-col justify-center gap-4 pt-10">
-            <h2 className="text-center text-xl font-semibold md:text-3xl">
+          <div className="mx-auto flex h-full min-h-0 max-w-7xl flex-col justify-center gap-4 pt-10">
+            <h2 className="shrink-0 text-center text-lg font-semibold sm:text-xl md:text-3xl">
               {activeQuestion.question}
             </h2>
             {activeQuestion.type === "wordcloud" ? (
-              <WordCloud
+              <WordCloudPanel
                 words={activeQuestion.words}
-                className="h-[85vh] w-full"
+                className="min-h-0 w-full flex-1"
                 heightMode="fullscreen"
                 isDark
               />

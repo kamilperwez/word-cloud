@@ -2,6 +2,8 @@
 
 A **Microsoft Teams–style live polling app** built with Next.js. Run Word Cloud and Multiple Choice polls in meetings, classrooms, or workshops — with **real-time updates** across every device.
 
+![Word Cloud Polls dashboard — dark theme with live word cloud](./docs/images/app-screenshot.png)
+
 ![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=flat-square&logo=typescript)
 ![Supabase](https://img.shields.io/badge/Supabase-Realtime-3ECF8E?style=flat-square&logo=supabase)
@@ -35,7 +37,11 @@ A **Microsoft Teams–style live polling app** built with Next.js. Run Word Clou
 
 - **Dark / light theme** toggle (persisted locally)
 - Responsive layout with sidebar navigation
-- Animated word cloud (hover emphasis, fade-in, size by frequency)
+- **Creative word cloud stage** — aurora gradient backdrop, dot texture, glass frame, golden-angle “bloom” layout
+- **Gradient words** — each term gets its own color pair + soft glow (dark); refined solids on light theme
+- **All words always visible** — organic layout with collision resolve + auto-fit to any screen size
+- **Live legend** — colored chips sync hover with the cloud; empty state when waiting for first vote
+- Animated entrance (scale-in on dark, fade on light) and hover emphasis
 - Vote counts shown as `word (3)` — real submissions, not internal weights
 
 ---
@@ -100,7 +106,8 @@ word-cloud/
 │   ├── actions/polls.ts      # Server actions (admin CRUD)
 │   └── layout.tsx
 ├── components/
-│   ├── WordCloud.tsx         # d3-cloud SVG renderer
+│   ├── WordCloudPanel.tsx    # Stage UI (backdrop, legend, empty state)
+│   ├── WordCloud.tsx         # SVG bloom renderer + gradients
 │   └── PollSidebar.tsx       # Question list + create flow
 ├── hooks/
 │   └── usePollData.ts        # Fetch + Realtime sync
@@ -110,6 +117,8 @@ word-cloud/
 │   ├── session.ts            # Browser session ID
 │   └── supabase/             # Supabase clients
 ├── docs/
+│   ├── images/
+│   │   └── app-screenshot.png  # README screenshot
 │   ├── DATABASE.md           # SQL scripts (not in git under /supabase)
 │   └── DEPLOYMENT.md         # Vercel deploy guide
 └── .env.example              # Template only — safe to commit
