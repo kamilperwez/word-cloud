@@ -154,3 +154,20 @@ on conflict (poll_id, session_id) do nothing;
 ## Realtime
 
 Enable **Database → Replication** for `polls` and `poll_responses` if live updates do not appear.
+
+---
+
+## 4. Harden RLS for production (optional)
+
+The default schema allows anyone to delete polls or responses. Admin actions in this app use the **service role** on the server, so you can lock down public writes:
+
+```sql
+drop policy if exists "polls_insert_public" on public.polls;
+drop policy if exists "polls_delete_public" on public.polls;
+drop policy if exists "poll_responses_delete_public" on public.poll_responses;
+
+-- Votes stay public; only SELECT + INSERT on poll_responses
+-- Poll create/delete: use server actions + SUPABASE_SERVICE_ROLE_KEY only
+```
+
+Votes remain `insert` + `select` on `poll_responses`; participants cannot delete others’ votes from the client.

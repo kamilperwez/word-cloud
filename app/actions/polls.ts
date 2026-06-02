@@ -63,8 +63,27 @@ export async function deletePollAction(input: {
     return { error: "Supabase is not configured." };
   }
 
-  const { error } = await supabase.from("polls").delete().eq("id", input.pollId);
-  if (error) return { error: error.message };
+  const { error: responsesError } = await supabase
+    .from("poll_responses")
+    .delete()
+    .eq("poll_id", input.pollId);
+
+  if (responsesError) return { error: responsesError.message };
+
+  const { data: deletedPolls, error: pollError } = await supabase
+    .from("polls")
+    .delete()
+    .eq("id", input.pollId)
+    .select("id");
+
+  if (pollError) return { error: pollError.message };
+  if (!deletedPolls?.length) {
+    return {
+      error:
+        "Poll was not deleted. Check admin passcode and SUPABASE_SERVICE_ROLE_KEY on the server.",
+    };
+  }
+
   return { ok: true };
 }
 

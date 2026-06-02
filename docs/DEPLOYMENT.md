@@ -42,8 +42,19 @@ npm run build
 
 ## Free tier capacity
 
-- **Vercel Hobby**: suitable for demos and ~100 concurrent viewers on a single poll session
-- **Supabase Free**: 500 MB database, Realtime included — enough for classroom / team poll use
+Counts **one database insert per participant per poll** (your `unique (poll_id, session_id)` rule). Page refreshes, realtime reloads, and session length are **not** part of these numbers.
+
+| Scenario | Safe plan (Supabase Free) | Hard ceiling |
+|----------|---------------------------|--------------|
+| Everyone votes at once (INSERT burst) | **~100** people in the same few seconds | **~200–250** before timeouts or duplicate-click races become likely on shared CPU |
+| Everyone has the app open for live results | **~150** simultaneous browsers | **200** concurrent Realtime connections (Supabase Free quota) |
+| Total voters over days/weeks | tens of thousands per poll | **500 MB** database (millions of small vote rows) |
+
+**One response per user:** enforced in Postgres — a second vote for the same poll and browser session returns “already voted” (`23505`).
+
+**This app reduces free-tier load by:** debounced realtime refresh (400 ms), coalesced reloads, narrow `select` columns, a separate small query for “already voted”, no manual refresh after submit, and one automatic retry on transient vote errors.
+
+**Vercel Hobby:** fine for the same room sizes; the usual limit is function concurrency, not one vote per user.
 
 ## Troubleshooting
 

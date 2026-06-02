@@ -1,7 +1,7 @@
 "use client";
 
-import { Lock, Maximize2, Moon, SendHorizonal, Sun, Trash2, Unlock, X } from "lucide-react";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { Lock, Maximize2, Moon, SendHorizonal, Sun, Unlock, X } from "lucide-react";
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   createPollAction,
@@ -12,6 +12,7 @@ import { submitChoiceVote, submitWordVote } from "@/lib/submit-vote";
 import { PollSidebar } from "@/components/PollSidebar";
 import { WordCloudPanel } from "@/components/WordCloudPanel";
 import { usePollData } from "@/hooks/usePollData";
+import { enterPresentationFullscreen, exitPresentationFullscreen } from "@/lib/fullscreen";
 import { getOrCreateSessionId } from "@/lib/session";
 import type { PollType } from "@/lib/types/polls";
 
@@ -27,6 +28,7 @@ export default function Home() {
     isConfigured,
     error: loadError,
     refresh,
+    markSessionVoted,
   } = usePollData();
 
   const [activeQuestionId, setActiveQuestionId] = useState("");
@@ -39,12 +41,41 @@ export default function Home() {
   const [isDarkTheme, setIsDarkTheme] = useState(true);
   const [voteNotice, setVoteNotice] = useState<string | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
+  const presentationRef = useRef<HTMLDivElement>(null);
+
+  const closeFullscreen = useCallback(() => {
+    setIsFullscreen(false);
+    void exitPresentationFullscreen();
+  }, []);
+
+  useEffect(() => {
+    if (!isFullscreen) return;
+
+    const node = presentationRef.current;
+    if (node) {
+      void enterPresentationFullscreen(node).catch(() => {
+        // Overlay still works when the Fullscreen API is unavailable.
+      });
+    }
+
+    const onFullscreenChange = () => {
+      if (!document.fullscreenElement) setIsFullscreen(false);
+    };
+
+    document.addEventListener("fullscreenchange", onFullscreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", onFullscreenChange);
+      void exitPresentationFullscreen();
+    };
+  }, [isFullscreen]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     const savedTheme = window.localStorage.getItem(THEME_KEY);
-    if (savedTheme === "light") setIsDarkTheme(false);
-    setIsHydrated(true);
+    queueMicrotask(() => {
+      if (savedTheme === "light") setIsDarkTheme(false);
+      setIsHydrated(true);
+    });
   }, []);
 
   useEffect(() => {
@@ -52,16 +83,19 @@ export default function Home() {
     window.localStorage.setItem(THEME_KEY, isDarkTheme ? "dark" : "light");
   }, [isDarkTheme, isHydrated]);
 
-  useEffect(() => {
-    if (!questions.length) return;
-    if (!activeQuestionId || !questions.some((q) => q.id === activeQuestionId)) {
-      setActiveQuestionId(questions[0]?.id ?? "");
+  const resolvedActiveQuestionId = useMemo(() => {
+    if (!questions.length) return activeQuestionId;
+    if (activeQuestionId && questions.some((q) => q.id === activeQuestionId)) {
+      return activeQuestionId;
     }
+    return questions[0]?.id ?? "";
   }, [activeQuestionId, questions]);
 
   const activeQuestion = useMemo(
-    () => questions.find((question) => question.id === activeQuestionId) ?? questions[0],
-    [activeQuestionId, questions],
+    () =>
+      questions.find((question) => question.id === resolvedActiveQuestionId) ??
+      questions[0],
+    [resolvedActiveQuestionId, questions],
   );
 
   const hasSessionVoted = activeQuestion
@@ -95,7 +129,7 @@ export default function Home() {
 
     setVoteNotice(null);
     setWordInput("");
-    await refresh();
+    markSessionVoted(activeQuestion.id);
   };
 
   const handleCreateQuestion = async (
@@ -129,6 +163,13 @@ export default function Home() {
       setVoteNotice(result.error);
       return;
     }
+
+    if (activeQuestionId === id || resolvedActiveQuestionId === id) {
+      setActiveQuestionId("");
+      closeFullscreen();
+    }
+
+    setVoteNotice(null);
     await refresh();
   };
 
@@ -177,7 +218,7 @@ export default function Home() {
 
     setSelectedOptions((prev) => ({ ...prev, [activeQuestion.id]: optionId }));
     setVoteNotice(null);
-    await refresh();
+    markSessionVoted(activeQuestion.id);
   };
 
   const totalVotes =
@@ -477,18 +518,25 @@ export default function Home() {
       </div>
 
       {isFullscreen && activeQuestion && (
-        <div className="fixed inset-0 z-50 flex flex-col bg-slate-900 p-4 text-white md:p-8">
+        <div
+          ref={presentationRef}
+          className="presentation-overlay fixed inset-0 z-50 flex flex-col bg-slate-900 p-3 text-white landscape:p-4 landscape:md:p-6"
+        >
+          <p className="presentation-overlay__rotate-hint shrink-0 rounded-lg border border-white/15 bg-slate-800/80 px-3 py-2 text-center text-xs text-slate-300">
+            Rotate your device to landscape for the best presentation view.
+          </p>
+
           <button
             type="button"
-            onClick={() => setIsFullscreen(false)}
-            className="absolute right-4 top-4 inline-flex items-center gap-2 rounded-lg border border-white/20 bg-slate-800/90 px-4 py-2 text-sm font-medium text-slate-100 transition hover:bg-slate-700"
+            onClick={closeFullscreen}
+            className="absolute right-3 top-3 z-10 inline-flex items-center gap-2 rounded-lg border border-white/20 bg-slate-800/90 px-3 py-2 text-sm font-medium text-slate-100 transition hover:bg-slate-700 landscape:right-4 landscape:top-4"
           >
             <X className="h-4 w-4" />
             Exit Fullscreen
           </button>
 
-          <div className="mx-auto flex h-full min-h-0 max-w-7xl flex-col justify-center gap-4 pt-10">
-            <h2 className="shrink-0 text-center text-lg font-semibold sm:text-xl md:text-3xl">
+          <div className="presentation-overlay__content mx-auto flex min-h-0 flex-col justify-center gap-2 pt-8 landscape:gap-4 landscape:pt-10">
+            <h2 className="shrink-0 px-2 text-center text-base font-semibold landscape:text-xl landscape:md:text-3xl">
               {activeQuestion.question}
             </h2>
             {activeQuestion.type === "wordcloud" ? (
@@ -499,7 +547,7 @@ export default function Home() {
                 isDark
               />
             ) : (
-              <div className="mx-auto w-full max-w-4xl space-y-4 rounded-2xl border border-white/20 bg-slate-800/60 p-6">
+              <div className="mx-auto w-full max-w-5xl space-y-3 overflow-y-auto rounded-2xl border border-white/20 bg-slate-800/60 p-4 landscape:space-y-4 landscape:p-6">
                 {activeQuestion.options.map((option) => {
                   const overlayTotal = activeQuestion.options.reduce(
                     (acc, item) => acc + item.votes,

@@ -42,7 +42,7 @@ export function PollSidebar({
   const [draftQuestion, setDraftQuestion] = useState("");
   const [draftType, setDraftType] = useState<PollType>("wordcloud");
   const [draftOptions, setDraftOptions] = useState("Option A, Option B");
-  const activeItemRef = useRef<HTMLButtonElement | null>(null);
+  const activeItemRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     activeItemRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
@@ -168,31 +168,38 @@ export function PollSidebar({
         {questions.map((item) => {
           const isActive = item.id === activeQuestionId;
           return (
-            <button
+            <div
               key={item.id}
               ref={isActive ? activeItemRef : undefined}
-              type="button"
-              onClick={() => onSelectQuestion(item.id)}
-              className={`w-full rounded-xl border px-3 py-2 text-left text-sm transition ${
+              className={`w-full rounded-xl border px-3 py-2 text-sm transition ${
                 isActive
                   ? isDark
                     ? "border-cyan-400/70 bg-cyan-500/10 text-cyan-200"
                     : "border-indigo-400 bg-indigo-50 text-indigo-900"
                   : isDark
-                    ? "border-white/10 bg-slate-950/40 text-slate-200 hover:border-fuchsia-400/50 hover:bg-fuchsia-500/10"
-                    : "border-slate-300 bg-slate-50 text-slate-700 hover:border-indigo-300 hover:bg-indigo-50/60"
+                    ? "border-white/10 bg-slate-950/40 text-slate-200"
+                    : "border-slate-300 bg-slate-50 text-slate-700"
               }`}
             >
               <div className="flex items-start justify-between gap-2">
-                <p className="line-clamp-2 font-medium">{item.question}</p>
+                <button
+                  type="button"
+                  onClick={() => onSelectQuestion(item.id)}
+                  className={`min-w-0 flex-1 text-left transition ${
+                    isActive
+                      ? ""
+                      : isDark
+                        ? "hover:text-fuchsia-200"
+                        : "hover:text-indigo-900"
+                  }`}
+                >
+                  <p className="line-clamp-2 font-medium">{item.question}</p>
+                </button>
                 {isAdmin && (
                   <button
                     type="button"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      onDeleteQuestion(item.id);
-                    }}
-                    className={`rounded p-1 transition ${
+                    onClick={() => onDeleteQuestion(item.id)}
+                    className={`shrink-0 rounded p-1 transition ${
                       isDark
                         ? "text-slate-400 hover:bg-red-500/20 hover:text-red-300"
                         : "text-slate-500 hover:bg-red-100 hover:text-red-700"
@@ -203,7 +210,11 @@ export function PollSidebar({
                   </button>
                 )}
               </div>
-              <div className="mt-1 flex items-center justify-between text-xs">
+              <button
+                type="button"
+                onClick={() => onSelectQuestion(item.id)}
+                className="mt-1 flex w-full items-center justify-between text-xs"
+              >
                 <span className={isDark ? "text-slate-400" : "text-slate-500"}>
                   {item.type === "wordcloud"
                     ? `${item.words?.length ?? 0} words`
@@ -218,8 +229,8 @@ export function PollSidebar({
                 >
                   {item.type === "wordcloud" ? "Word Cloud" : "Multiple Choice"}
                 </span>
-              </div>
-            </button>
+              </button>
+            </div>
           );
         })}
       </div>
