@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "screenshots": "node scripts/capture-screenshots.mjs"
+    "screenshots": "node scripts/capture-screenshots.mjs",
+    "stress-test": "node scripts/stress-test-votes.mjs",
+    "seed-demo": "node scripts/seed-demo-votes.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",

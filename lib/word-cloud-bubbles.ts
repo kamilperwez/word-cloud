@@ -47,9 +47,9 @@ export function computeBubbleMetrics(
   const displayText = prominent && raw.length <= 14 ? raw.toUpperCase() : raw;
 
   const textW = measureTextWidth(displayText, fontSize, fontWeight, FONT);
-  const padX = Math.max(14, fontSize * 0.5);
-  const padY = Math.max(10, fontSize * 0.38);
-  const tailSize = Math.max(8, fontSize * 0.32);
+  const padX = Math.max(16, fontSize * 0.55);
+  const padY = Math.max(12, fontSize * 0.42);
+  const tailSize = Math.max(8, fontSize * 0.28);
   const bubbleW = textW + padX * 2;
   const bubbleH = fontSize * 1.2 + padY * 2;
   const tailDir = tailForIndex(rankIndex, raw);

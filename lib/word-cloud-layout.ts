@@ -65,52 +65,106 @@ function cloudBounds(
   };
 }
 
-function boxesOverlap(
-  a: LayoutWord,
-  b: LayoutWord,
+type Bounds = { left: number; right: number; top: number; bottom: number };
+
+function getOverlap(
+  boxA: Bounds,
+  boxB: Bounds,
   gap: number,
-  fontWeight: (w: LayoutWord) => number,
-  rankA: number,
-  rankB: number,
-): boolean {
-  const boxA = bubbleBox(a, fontWeight, rankA);
-  const boxB = bubbleBox(b, fontWeight, rankB);
-  return !(
-    boxA.right + gap < boxB.left ||
-    boxA.left - gap > boxB.right ||
-    boxA.bottom + gap < boxB.top ||
-    boxA.top - gap > boxB.bottom
-  );
+): { overlapX: number; overlapY: number } | null {
+  const overlapX =
+    Math.min(boxA.right, boxB.right) - Math.max(boxA.left, boxB.left) + gap;
+  const overlapY =
+    Math.min(boxA.bottom, boxB.bottom) - Math.max(boxA.top, boxB.top) + gap;
+  if (overlapX <= 0 || overlapY <= 0) return null;
+  return { overlapX, overlapY };
 }
 
-/** Slight overlap like the reference — bubbles stack visually. */
+/** Push overlapping bubbles apart; positive gap = padding between bubbles. */
 function separateOverlaps(
   words: LayoutWord[],
   fontWeight: (w: LayoutWord) => number,
-  gap = -6,
+  gap = 12,
 ) {
-  for (let pass = 0; pass < 120; pass += 1) {
+  const mobility = (rank: number) => (rank === 0 ? 0.2 : 0.5);
+
+  for (let pass = 0; pass < 240; pass += 1) {
     let moved = false;
+
     for (let i = 0; i < words.length; i += 1) {
       for (let j = i + 1; j < words.length; j += 1) {
         const a = words[i];
         const b = words[j];
-        if (!boxesOverlap(a, b, gap, fontWeight, i, j)) continue;
+        const boxA = bubbleBox(a, fontWeight, i);
+        const boxB = bubbleBox(b, fontWeight, j);
+        const overlap = getOverlap(boxA, boxB, gap);
+        if (!overlap) continue;
 
-        const dx = (b.x ?? 0) - (a.x ?? 0);
-        const dy = (b.y ?? 0) - (a.y ?? 0);
-        const dist = Math.hypot(dx, dy) || 1;
-        const push = 3;
-        const factorB = i === 0 ? 0.9 : 0.55;
-        const factorA = i === 0 ? 0.1 : 0.45;
-        b.x = (b.x ?? 0) + (dx / dist) * push * factorB;
-        b.y = (b.y ?? 0) + (dy / dist) * push * factorB;
-        a.x = (a.x ?? 0) - (dx / dist) * push * factorA;
-        a.y = (a.y ?? 0) - (dy / dist) * push * factorA;
+        const cxA = (boxA.left + boxA.right) / 2;
+        const cyA = (boxA.top + boxA.bottom) / 2;
+        const cxB = (boxB.left + boxB.right) / 2;
+        const cyB = (boxB.top + boxB.bottom) / 2;
+
+        const moveA = mobility(i);
+        const moveB = mobility(j);
+        const totalMove = moveA + moveB;
+
+        if (overlap.overlapX <= overlap.overlapY) {
+          const dir = cxB >= cxA ? 1 : -1;
+          const shift = overlap.overlapX / 2;
+          a.x = (a.x ?? 0) - dir * shift * (moveA / totalMove);
+          b.x = (b.x ?? 0) + dir * shift * (moveB / totalMove);
+        } else {
+          const dir = cyB >= cyA ? 1 : -1;
+          const shift = overlap.overlapY / 2;
+          a.y = (a.y ?? 0) - dir * shift * (moveA / totalMove);
+          b.y = (b.y ?? 0) + dir * shift * (moveB / totalMove);
+        }
+
+        a.bubble = undefined;
+        b.bubble = undefined;
         moved = true;
       }
     }
+
     if (!moved) break;
+  }
+}
+
+function computeSpiralSpread(
+  placed: LayoutWord[],
+  viewportWidth: number,
+  viewportHeight: number,
+): number {
+  const n = placed.length;
+  const shortSide = Math.min(viewportWidth, viewportHeight);
+
+  let sumDiameter = 0;
+  for (const word of placed) {
+    const bubble = word.bubble!;
+    sumDiameter += Math.max(bubble.totalW, bubble.totalH);
+  }
+  const avgDiameter = sumDiameter / n;
+  const density =
+    n <= 4 ? 1.0 : n <= 10 ? 1.2 : n <= 18 ? 1.45 : 1.65;
+
+  return Math.max(shortSide * 0.42, avgDiameter * Math.sqrt(n) * density);
+}
+
+function scaleCloudPositions(
+  words: LayoutWord[],
+  fontWeight: (w: LayoutWord) => number,
+  maxWidth: number,
+  maxHeight: number,
+) {
+  const bounds = cloudBounds(words, fontWeight);
+  const scale = Math.min(maxWidth / bounds.width, maxHeight / bounds.height, 1);
+  if (scale >= 0.998) return;
+
+  for (const word of words) {
+    word.x = (word.x ?? 0) * scale;
+    word.y = (word.y ?? 0) * scale;
+    word.bubble = undefined;
   }
 }
 
@@ -143,6 +197,7 @@ export function fitCloudInsideViewport(
       for (const word of words) {
         word.x = (word.x ?? 0) - bounds.cx;
         word.y = (word.y ?? 0) - bounds.cy;
+        word.bubble = undefined;
       }
       return;
     }
@@ -202,9 +257,11 @@ export function layoutBloomCloud(
     return placed;
   }
 
-  const shortSide = Math.min(viewportWidth, viewportHeight);
-  const spread = shortSide * (n <= 4 ? 0.18 : n <= 8 ? 0.24 : n <= 15 ? 0.28 : 0.32);
+  const spread = computeSpiralSpread(placed, viewportWidth, viewportHeight);
   const GOLDEN = Math.PI * (3 - Math.sqrt(5));
+  const margin = 24;
+  const maxW = viewportWidth - margin * 2;
+  const maxH = viewportHeight - margin * 2;
 
   placed[0].x = 0;
   placed[0].y = 0;
@@ -215,11 +272,21 @@ export function layoutBloomCloud(
     const angle = t * GOLDEN - Math.PI / 2;
     const radius = spread * Math.sqrt(t / n);
     word.x = Math.cos(angle) * radius;
-    word.y = Math.sin(angle) * radius * 0.9;
+    word.y = Math.sin(angle) * radius;
   }
 
-  separateOverlaps(placed, fontWeight, -8);
+  separateOverlaps(placed, fontWeight, 14);
   fitCloudInsideViewport(placed, viewportWidth, viewportHeight, fontWeight);
+  separateOverlaps(placed, fontWeight, 10);
+  scaleCloudPositions(placed, fontWeight, maxW, maxH);
+  separateOverlaps(placed, fontWeight, 8);
+
+  const bounds = cloudBounds(placed, fontWeight);
+  for (const word of placed) {
+    word.x = (word.x ?? 0) - bounds.cx;
+    word.y = (word.y ?? 0) - bounds.cy;
+    word.bubble = undefined;
+  }
 
   placed.forEach((word, index) => {
     word.zIndex = index;

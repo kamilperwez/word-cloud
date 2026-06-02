@@ -91,9 +91,18 @@ export function WordCloudCanvas({
     const n = Math.max(words.length, 1);
     const maxSize = Math.min(
       Math.floor(short * 0.22),
-      n <= 4 ? Math.floor(short * 0.2) : Math.floor(short * 0.17),
+      n <= 4
+        ? Math.floor(short * 0.2)
+        : n <= 10
+          ? Math.floor(short * 0.16)
+          : n <= 18
+            ? Math.floor(short * 0.13)
+            : Math.floor(short * 0.11),
     );
-    const minSize = Math.max(12, Math.floor(maxSize * (n <= 5 ? 0.52 : 0.4)));
+    const minSize = Math.max(
+      11,
+      Math.floor(maxSize * (n <= 5 ? 0.52 : n <= 12 ? 0.42 : 0.36)),
+    );
     return { maxSize, minSize, n };
   }, [width, height, words.length]);
 
