@@ -13,7 +13,13 @@ const page = await browser.newPage({
 });
 
 await page.goto(BASE_URL, { waitUntil: "networkidle", timeout: 60_000 });
-await page.waitForTimeout(2500);
+await page.waitForTimeout(1500);
+await page
+  .locator("g.word-bubble, [aria-label='Word cloud results']")
+  .first()
+  .waitFor({ state: "visible", timeout: 15_000 })
+  .catch(() => undefined);
+await page.waitForTimeout(1000);
 
 await page.screenshot({
   path: `${OUT_DIR}/app-screenshot.png`,

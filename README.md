@@ -1,11 +1,15 @@
 # Word Cloud Polls
 
-A **Microsoft Teams–style live polling app** built with Next.js. Run Word Cloud and Multiple Choice polls in meetings, classrooms, or workshops — with **real-time updates** across every device.
+A **live polling app** built with Next.js. Run Word Cloud and Multiple Choice polls in meetings, classrooms, or workshops — with **real-time updates** across every device.
 
-![Word Cloud Polls — live speech-bubble word cloud and poll sidebar](./docs/images/app-screenshot.png)
+![Word Cloud Polls — full app with speech-bubble word cloud, poll sidebar, and live vote chips](./docs/images/app-screenshot.png)
 
 <p align="center">
-  <img src="./docs/images/portfolio-showcase.png" alt="Word Cloud Polls app showcase" width="720" />
+  <img
+    src="./docs/images/portfolio-showcase.png"
+    alt="Word Cloud Polls — dark theme dashboard with colorful speech-bubble word cloud"
+    width="800"
+  />
 </p>
 
 ![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)
@@ -22,13 +26,13 @@ A **Microsoft Teams–style live polling app** built with Next.js. Run Word Clou
 | Type | Audience experience | Host view |
 |------|---------------------|-----------|
 | **Word Cloud** | Submit a single word; repeated words grow larger | Colorful animated cloud + word list with vote counts |
-| **Multiple Choice** | Tap one option | Live percentage bars (Teams-style results) |
+| **Multiple Choice** | Tap one option | Live percentage bars that update as votes come in |
 
 ### Live collaboration
 
 - **Supabase Realtime** — votes appear on all screens without refresh
 - **One vote per browser session** per poll (enforced in database + UI)
-- **Fullscreen presentation mode** for projectors and Teams shares
+- **Fullscreen presentation mode** for projectors and shared screens
 
 ### Admin controls
 
@@ -41,7 +45,7 @@ A **Microsoft Teams–style live polling app** built with Next.js. Run Word Clou
 
 - **Dark / light theme** toggle (persisted locally)
 - Responsive layout with sidebar navigation
-- **Creative word cloud stage** — aurora gradient backdrop, dot texture, glass frame, golden-angle “bloom” layout
+- **Creative word cloud stage** — aurora gradient backdrop, speech-bubble words, and a scrollable vote legend
 - **Gradient words** — each term gets its own color pair + soft glow (dark); refined solids on light theme
 - **All words always visible** — organic layout with collision resolve + auto-fit to any screen size
 - **Live legend** — colored chips sync hover with the cloud; empty state when waiting for first vote
@@ -173,9 +177,9 @@ flowchart LR
 
 | File | Use |
 |------|-----|
-| [docs/images/app-screenshot.png](./docs/images/app-screenshot.png) | Full-page shot for README |
-| [docs/images/portfolio-showcase.png](./docs/images/portfolio-showcase.png) | Wide hero / project gallery (1440×900) |
-| [docs/images/portfolio-square.png](./docs/images/portfolio-square.png) | Square crop for profile or card thumbnails |
+| [docs/images/app-screenshot.png](./docs/images/app-screenshot.png) | Full-page README capture (current UI) |
+| [docs/images/portfolio-showcase.png](./docs/images/portfolio-showcase.png) | Wide hero for portfolio / project cards (1440×900) |
+| [docs/images/portfolio-square.png](./docs/images/portfolio-square.png) | Square crop for profile or social thumbnails |
 
 Regenerate after UI changes:
 
