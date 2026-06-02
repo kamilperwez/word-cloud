@@ -1,1 +1,166 @@
-# word-cloud
+# Word Cloud Polls
+
+A **Microsoft Teams–style live polling app** built with Next.js. Run Word Cloud and Multiple Choice polls in meetings, classrooms, or workshops — with **real-time updates** across every device.
+
+![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=flat-square&logo=typescript)
+![Supabase](https://img.shields.io/badge/Supabase-Realtime-3ECF8E?style=flat-square&logo=supabase)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-38B2AC?style=flat-square&logo=tailwind-css)
+
+---
+
+## Features
+
+### Poll types
+
+| Type | Audience experience | Host view |
+|------|---------------------|-----------|
+| **Word Cloud** | Submit a single word; repeated words grow larger | Colorful animated cloud + word list with vote counts |
+| **Multiple Choice** | Tap one option | Live percentage bars (Teams-style results) |
+
+### Live collaboration
+
+- **Supabase Realtime** — votes appear on all screens without refresh
+- **One vote per browser session** per poll (enforced in database + UI)
+- **Fullscreen presentation mode** for projectors and Teams shares
+
+### Admin controls
+
+- Passcode-protected **Admin Mode**
+- Create polls (Word Cloud or Multiple Choice, 2–4 options)
+- Delete polls and individual word submissions
+- Sample polls seeded via database scripts
+
+### UX & design
+
+- **Dark / light theme** toggle (persisted locally)
+- Responsive layout with sidebar navigation
+- Animated word cloud (hover emphasis, fade-in, size by frequency)
+- Vote counts shown as `word (3)` — real submissions, not internal weights
+
+---
+
+## Tech stack
+
+| Layer | Technology |
+|-------|------------|
+| Framework | [Next.js 16](https://nextjs.org) (App Router) |
+| Language | TypeScript |
+| Styling | Tailwind CSS v4 |
+| Database | [Supabase](https://supabase.com) (Postgres + Realtime) |
+| Visualization | d3-cloud, d3-selection, d3-ease |
+| Icons | lucide-react |
+| Hosting | [Vercel](https://vercel.com) (free tier) |
+
+---
+
+## Quick start
+
+### 1. Clone and install
+
+```bash
+git clone <your-repo-url>
+cd word-cloud
+npm install
+```
+
+### 2. Configure Supabase
+
+1. Create a free project at [supabase.com](https://supabase.com).
+2. Run the SQL scripts in [docs/DATABASE.md](./docs/DATABASE.md) (schema → fix-rls if needed → seed).
+3. Copy `.env.example` to `.env.local` and fill in your keys:
+
+```bash
+cp .env.example .env.local
+```
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-publishable-or-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+ADMIN_PASSWORD=your-secure-passcode
+```
+
+### 3. Run locally
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+---
+
+## Project structure
+
+```
+word-cloud/
+├── app/
+│   ├── page.tsx              # Main poll dashboard (client)
+│   ├── actions/polls.ts      # Server actions (admin CRUD)
+│   └── layout.tsx
+├── components/
+│   ├── WordCloud.tsx         # d3-cloud SVG renderer
+│   └── PollSidebar.tsx       # Question list + create flow
+├── hooks/
+│   └── usePollData.ts        # Fetch + Realtime sync
+├── lib/
+│   ├── aggregate.ts          # Build cloud/chart data from responses
+│   ├── submit-vote.ts        # Client-side vote inserts
+│   ├── session.ts            # Browser session ID
+│   └── supabase/             # Supabase clients
+├── docs/
+│   ├── DATABASE.md           # SQL scripts (not in git under /supabase)
+│   └── DEPLOYMENT.md         # Vercel deploy guide
+└── .env.example              # Template only — safe to commit
+```
+
+---
+
+## Documentation
+
+| Guide | Description |
+|-------|-------------|
+| [docs/DATABASE.md](./docs/DATABASE.md) | Schema, RLS fixes, sample word seeds |
+| [docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md) | Vercel env vars and production checklist |
+
+---
+
+## How voting works
+
+```mermaid
+flowchart LR
+  voter[Participant browser] -->|insert vote| supabase[(Supabase)]
+  supabase -->|Realtime broadcast| host[Presenter + all clients]
+  host --> cloud[Word Cloud / Charts]
+```
+
+1. Each browser gets a unique `session_id` in `sessionStorage`.
+2. A vote inserts one row into `poll_responses`.
+3. The unique constraint `(poll_id, session_id)` blocks double voting.
+4. All clients subscribe to `postgres_changes` and re-aggregate results.
+
+---
+
+## Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start development server |
+| `npm run build` | Production build |
+| `npm run start` | Run production server locally |
+| `npm run lint` | ESLint |
+
+---
+
+## Security notes
+
+- **Do not commit** `.env.local`, service role keys, or local `/supabase/` SQL copies.
+- Admin actions are gated by `ADMIN_PASSWORD` on the server.
+- For production, prefer `SUPABASE_SERVICE_ROLE_KEY` for admin mutations and keep RLS strict on public tables.
+
+---
+
+## License
+
+MIT — use freely for demos, internal tools, and workshops.
